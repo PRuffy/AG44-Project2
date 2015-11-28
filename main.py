@@ -1,3 +1,6 @@
+import os
+from ski import *
+
 def getGraphData():
 	data=[]
 	
@@ -14,7 +17,11 @@ def getGraphData():
 	
 	return(data)
 
+		
 if __name__ == "__main__":
 
 	domainData = getGraphData()
-	print(domainData)
+	
+	Graph = skiDomain()
+	Graph.createGraph(domainData)
+	
