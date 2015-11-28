@@ -54,28 +54,35 @@ class skiDomain(object):
 		tempArrivalNode = 0
 		tempEdgeNumber = 0
 
-		while tempParcoursData <= self.numberOfEdge+self.numberOfVertices:
+		while tempParcoursData <= self.numberOfEdge+self.numberOfVertices+1:
 
 			tempEdgeNumber = int(data[tempParcoursData][0])
 			tempDepartureNode = int(data[tempParcoursData][3])
 			tempArrivalNode = int(data[tempParcoursData][4])
 
-			self.domain.add_edge(tempDepartureNode,tempArrivalNode, Number = tempEdgeNumber)
-			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['Name'] = data[tempParcoursData][1]
-			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['Type'] = data[tempParcoursData][2]
+			self.domain.add_edge(tempDepartureNode,tempArrivalNode, EdgeNumber = tempEdgeNumber)
+			self.domain.edge[tempDepartureNode][tempArrivalNode]['EdgeNumber' == tempEdgeNumber]['Name'] = data[tempParcoursData][1]
+			self.domain.edge[tempDepartureNode][tempArrivalNode]['EdgeNumber' == tempEdgeNumber]['Type'] = data[tempParcoursData][2]
 
-			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['DepartureNode'] = tempDepartureNode
-			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['ArrivalNode'] = tempArrivalNode
+			self.domain.edge[tempDepartureNode][tempArrivalNode]['EdgeNumber' == tempEdgeNumber]['DepartureNode'] = tempDepartureNode
+			self.domain.edge[tempDepartureNode][tempArrivalNode]['EdgeNumber' == tempEdgeNumber]['ArrivalNode'] = tempArrivalNode
 			#The length is given in meters
-			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['length'] = abs(self.domain.node[tempDepartureNode]['Altitude']-self.domain.node[tempArrivalNode]['Altitude'])
+			self.domain.edge[tempDepartureNode][tempArrivalNode]['EdgeNumber' == tempEdgeNumber]['length'] = abs(self.domain.node[tempDepartureNode]['Altitude']-self.domain.node[tempArrivalNode]['Altitude'])
 			#The time is given in second
-			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['Time'] = timeOfParcours(tempDepartureNode,tempArrivalNode,tempEdgeNumber)
+			self.domain.edge[tempDepartureNode][tempArrivalNode]['EdgeNumber' == tempEdgeNumber]['Time'] = timeOfParcours(tempDepartureNode,tempArrivalNode,tempEdgeNumber)
 			
-			print(self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber])
+			print(self.domain.edge[tempDepartureNode][tempArrivalNode]['EdgeNumber' == tempEdgeNumber])
 
 			self.domain.node[tempArrivalNode]['Neighbours'].append(tempArrivalNode)
 			self.domain.node[tempArrivalNode]['Neighbours'].append(tempEdgeNumber)
+
 			tempParcoursData += 1
 
+	
 
+	def dijkstra(self, depatureNode, arrivalNode, level):
+		pass
+
+	def DFS(self,depatureNode,level):
+		pass
 		
