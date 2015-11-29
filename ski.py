@@ -6,7 +6,11 @@ class skiDomain(object):
 		numberOfEdge =0
 		numberOfVertices = 0
 		domain = nx.MultiDiGraph()
-		
+	
+
+	"""That function read the data obtain by the function getgraphData in the main"""
+	"""It create the graph starting by the node then the edge"""
+
 	def createGraph(self, data):
 		self.numberOfVertices = int(data[0][0])
 		self.numberOfEdge = int(data[self.numberOfVertices+1][0])
@@ -60,29 +64,109 @@ class skiDomain(object):
 			tempDepartureNode = int(data[tempParcoursData][3])
 			tempArrivalNode = int(data[tempParcoursData][4])
 
-			self.domain.add_edge(tempDepartureNode,tempArrivalNode, EdgeNumber = tempEdgeNumber)
-			self.domain.edge[tempDepartureNode][tempArrivalNode]['EdgeNumber' == tempEdgeNumber]['Name'] = data[tempParcoursData][1]
-			self.domain.edge[tempDepartureNode][tempArrivalNode]['EdgeNumber' == tempEdgeNumber]['Type'] = data[tempParcoursData][2]
+			self.domain.add_edge(tempDepartureNode,tempArrivalNode, Number = tempEdgeNumber)
+			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['Name'] = data[tempParcoursData][1]
+			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['Type'] = data[tempParcoursData][2]
+			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['edgeNumber'] = tempEdgeNumber
 
-			self.domain.edge[tempDepartureNode][tempArrivalNode]['EdgeNumber' == tempEdgeNumber]['DepartureNode'] = tempDepartureNode
-			self.domain.edge[tempDepartureNode][tempArrivalNode]['EdgeNumber' == tempEdgeNumber]['ArrivalNode'] = tempArrivalNode
+			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['DepartureNode'] = tempDepartureNode
+			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['ArrivalNode'] = tempArrivalNode
 			#The length is given in meters
-			self.domain.edge[tempDepartureNode][tempArrivalNode]['EdgeNumber' == tempEdgeNumber]['length'] = abs(self.domain.node[tempDepartureNode]['Altitude']-self.domain.node[tempArrivalNode]['Altitude'])
+			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['length'] = abs(self.domain.node[tempDepartureNode]['Altitude']-self.domain.node[tempArrivalNode]['Altitude'])
 			#The time is given in second
-			self.domain.edge[tempDepartureNode][tempArrivalNode]['EdgeNumber' == tempEdgeNumber]['Time'] = timeOfParcours(tempDepartureNode,tempArrivalNode,tempEdgeNumber)
-			
-			print(self.domain.edge[tempDepartureNode][tempArrivalNode]['EdgeNumber' == tempEdgeNumber])
+			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['Time'] = timeOfParcours(tempDepartureNode,tempArrivalNode,tempEdgeNumber)
 
 			self.domain.node[tempArrivalNode]['Neighbours'].append(tempArrivalNode)
 			self.domain.node[tempArrivalNode]['Neighbours'].append(tempEdgeNumber)
 
 			tempParcoursData += 1
 
-	
+	"""That function create a copy of the graph and remove all the edge forbidden"""
+	"""Then the copy is return"""
+	"""We assume that the level is a simple character"""
+	"""It give the level of the skier wich means it can only be V B R or N"""
+	"""We also assume that every skilift can be used"""
+	def modifyGraph(self, level):
+		domainCopy = self.domain.copy()
+		domainCopyReturn = self.domain.copy()
+
+		if level == 'V':
+			for depatureNode in range(1, self.numberOfVertices):
+				parcoursNeighbours = 0
+				while domainCopy.node[depatureNode]['LeavingEdge'] != []:
+					edgeType = domainCopy.edge[depatureNode][domainCopy.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopy.node[depatureNode]['LeavingEdge'][parcoursNeighbours]]['Type']
+
+					if edgeType == 'B' or edgeType == 'R' or edgeType == 'N':
+						domainCopyReturn.remove_edge(domainCopyReturn.edge[depatureNode][domainCopyReturn.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopyReturn.node[depatureNode]['LeavingEdge'][parcoursNeighbours]])
+						domainCopyReturn.node[depatureNode]['Neighbours'].pop(0)
+						domainCopyReturn.node[depatureNode]['LeavingEdge'].pop(0)
+
+					domainCopy.remove_edge(domainCopy.edge[depatureNode][domainCopy.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopy.node[depatureNode]['LeavingEdge'][parcoursNeighbours]])
+					domainCopy.node[depatureNode]['Neighbours'].pop(0)
+					domainCopy.node[depatureNode]['LeavingEdge'].pop(0)
+
+		elif level == 'B':
+
+			for depatureNode in range(1, self.numberOfVertices):
+				parcoursNeighbours = 0
+				while domainCopy.node[depatureNode]['LeavingEdge'] != []:
+					edgeType = domainCopy.edge[depatureNode][domainCopy.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopy.node[depatureNode]['LeavingEdge'][parcoursNeighbours]]['Type']
+
+					if edgeType == 'R' or edgeType == 'N':
+						domainCopyReturn.remove_edge(domainCopyReturn.edge[depatureNode][domainCopyReturn.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopyReturn.node[depatureNode]['LeavingEdge'][parcoursNeighbours]])
+						domainCopyReturn.node[depatureNode]['Neighbours'].pop(0)
+						domainCopyReturn.node[depatureNode]['LeavingEdge'].pop(0)
+
+					domainCopy.remove_edge(domainCopy.edge[depatureNode][domainCopy.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopy.node[depatureNode]['LeavingEdge'][parcoursNeighbours]])
+					domainCopy.node[depatureNode]['Neighbours'].pop(0)
+					domainCopy.node[depatureNode]['LeavingEdge'].pop(0)
+
+		elif level == 'R':
+
+			for depatureNode in range(1, self.numberOfVertices):
+				parcoursNeighbours = 0
+				while domainCopy.node[depatureNode]['LeavingEdge'] != []:
+					edgeType = domainCopy.edge[depatureNode][domainCopy.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopy.node[depatureNode]['LeavingEdge'][parcoursNeighbours]]['Type']
+
+					if edgeType == 'N':
+						domainCopyReturn.remove_edge(domainCopyReturn.edge[depatureNode][domainCopyReturn.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopyReturn.node[depatureNode]['LeavingEdge'][parcoursNeighbours]])
+						domainCopyReturn.node[depatureNode]['Neighbours'].pop(0)
+						domainCopyReturn.node[depatureNode]['LeavingEdge'].pop(0)
+
+					domainCopy.remove_edge(domainCopy.edge[depatureNode][domainCopy.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopy.node[depatureNode]['LeavingEdge'][parcoursNeighbours]])
+					domainCopy.node[depatureNode]['Neighbours'].pop(0)
+					domainCopy.node[depatureNode]['LeavingEdge'].pop(0)
+		
+		
+		return domainCopyReturn
+
 
 	def dijkstra(self, depatureNode, arrivalNode, level):
+		domainCopy = self.modifyGraph(level)
+
+
 		pass
 
 	def DFS(self,depatureNode,level):
-		pass
+		for node in self.domain.nodes():
+			self.domain.node[node]['Discovered'] = "False"
+
+
+		domainCopy = self.modifyGraph(level)
+		tempStack = []
+		accesibleNode = []
+		tempStack.push(depatureNode)
+		tempNode = depatureNode
+
+
+		while tempStack != []:
+			tempStack.pop()
+			if domainCopy.node[tempNode]['Discovered'] != "True":
+				self.domain.node[tempNode]['Discovered'] != "True"
+				accesibleNode.push(tempNode)
+				for tempNeighbours in domainCopy.node[tempNode]['Neighbours']:
+					tempStack.push(tempNeighbours)
+
+
+		print (accesibleNode)
 		
