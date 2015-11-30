@@ -43,10 +43,10 @@ class skiDomain(object):
 			#Creating a node
 			self.domain.add_node(tempParcoursData)
 			#Creating the primary attributes of the node
-			self.domain.node[tempParcoursData]['Numnber'] = int(data[tempParcoursData][0]) #This attribus is maybe useless. To remove if so.
+			self.domain.node[tempParcoursData]['Number'] = int(data[tempParcoursData][0]) #This attribus is maybe useless. To remove if so.
 			self.domain.node[tempParcoursData]['Name'] = data[tempParcoursData][1]
 			self.domain.node[tempParcoursData]['Altitude'] = int (data[tempParcoursData][2])
-
+			self.domain.node[tempParcoursData]['Discovered'] = False
 			#Creating two empty list of neighbours and leaving edge
 			self.domain.node[tempParcoursData]['Neighbours'] = []
 			self.domain.node[tempParcoursData]['LeavingEdge'] = []
@@ -75,97 +75,165 @@ class skiDomain(object):
 			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['length'] = abs(self.domain.node[tempDepartureNode]['Altitude']-self.domain.node[tempArrivalNode]['Altitude'])
 			#The time is given in second
 			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['Time'] = timeOfParcours(tempDepartureNode,tempArrivalNode,tempEdgeNumber)
-
-			self.domain.node[tempArrivalNode]['Neighbours'].append(tempArrivalNode)
-			self.domain.node[tempArrivalNode]['Neighbours'].append(tempEdgeNumber)
-
+			self.domain.edge[tempDepartureNode][tempArrivalNode]['Number' == tempEdgeNumber]['Usable'] = True
+			self.domain.node[tempDepartureNode]['Neighbours'].append(tempArrivalNode)
+			self.domain.node[tempDepartureNode]['LeavingEdge'].append(tempEdgeNumber)
+			
 			tempParcoursData += 1
-
-	"""That function create a copy of the graph and remove all the edge forbidden"""
-	"""Then the copy is return"""
-	"""We assume that the level is a simple character"""
-	"""It give the level of the skier wich means it can only be V B R or N"""
-	"""We also assume that every skilift can be used"""
-	def modifyGraph(self, level):
-		domainCopy = self.domain.copy()
-		domainCopyReturn = self.domain.copy()
-
-		if level == 'V':
-			for depatureNode in range(1, self.numberOfVertices):
-				parcoursNeighbours = 0
-				while domainCopy.node[depatureNode]['LeavingEdge'] != []:
-					edgeType = domainCopy.edge[depatureNode][domainCopy.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopy.node[depatureNode]['LeavingEdge'][parcoursNeighbours]]['Type']
-
-					if edgeType == 'B' or edgeType == 'R' or edgeType == 'N':
-						domainCopyReturn.remove_edge(domainCopyReturn.edge[depatureNode][domainCopyReturn.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopyReturn.node[depatureNode]['LeavingEdge'][parcoursNeighbours]])
-						domainCopyReturn.node[depatureNode]['Neighbours'].pop(0)
-						domainCopyReturn.node[depatureNode]['LeavingEdge'].pop(0)
-
-					domainCopy.remove_edge(domainCopy.edge[depatureNode][domainCopy.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopy.node[depatureNode]['LeavingEdge'][parcoursNeighbours]])
-					domainCopy.node[depatureNode]['Neighbours'].pop(0)
-					domainCopy.node[depatureNode]['LeavingEdge'].pop(0)
-
-		elif level == 'B':
-
-			for depatureNode in range(1, self.numberOfVertices):
-				parcoursNeighbours = 0
-				while domainCopy.node[depatureNode]['LeavingEdge'] != []:
-					edgeType = domainCopy.edge[depatureNode][domainCopy.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopy.node[depatureNode]['LeavingEdge'][parcoursNeighbours]]['Type']
-
-					if edgeType == 'R' or edgeType == 'N':
-						domainCopyReturn.remove_edge(domainCopyReturn.edge[depatureNode][domainCopyReturn.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopyReturn.node[depatureNode]['LeavingEdge'][parcoursNeighbours]])
-						domainCopyReturn.node[depatureNode]['Neighbours'].pop(0)
-						domainCopyReturn.node[depatureNode]['LeavingEdge'].pop(0)
-
-					domainCopy.remove_edge(domainCopy.edge[depatureNode][domainCopy.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopy.node[depatureNode]['LeavingEdge'][parcoursNeighbours]])
-					domainCopy.node[depatureNode]['Neighbours'].pop(0)
-					domainCopy.node[depatureNode]['LeavingEdge'].pop(0)
-
-		elif level == 'R':
-
-			for depatureNode in range(1, self.numberOfVertices):
-				parcoursNeighbours = 0
-				while domainCopy.node[depatureNode]['LeavingEdge'] != []:
-					edgeType = domainCopy.edge[depatureNode][domainCopy.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopy.node[depatureNode]['LeavingEdge'][parcoursNeighbours]]['Type']
-
-					if edgeType == 'N':
-						domainCopyReturn.remove_edge(domainCopyReturn.edge[depatureNode][domainCopyReturn.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopyReturn.node[depatureNode]['LeavingEdge'][parcoursNeighbours]])
-						domainCopyReturn.node[depatureNode]['Neighbours'].pop(0)
-						domainCopyReturn.node[depatureNode]['LeavingEdge'].pop(0)
-
-					domainCopy.remove_edge(domainCopy.edge[depatureNode][domainCopy.node[depatureNode]['Neighbours'][parcoursNeighbours]]["edgeNumber" == domainCopy.node[depatureNode]['LeavingEdge'][parcoursNeighbours]])
-					domainCopy.node[depatureNode]['Neighbours'].pop(0)
-					domainCopy.node[depatureNode]['LeavingEdge'].pop(0)
 		
+
+	"""The function set the attributes usable of the edge to true or false depending on the level asked by the skier"""
+	def setUsableEdge(self, level):
+		departureNode = 0
+		arrivalNode = 0
+		edgeNumber = 0
+		edgeType  = ''
+		numberOfNeighbours = 0
+
+		if level == 'N':
+			for departureNode in self.domain.nodes():
+				numberOfNeighbours = len(self.domain.node[departureNode]['Neighbours'])
+				
+				for arrayTraversal in range(0,numberOfNeighbours-1):
+					arrivalNode = self.domain.node[departureNode]['Neighbours'][arrayTraversal]
+					edgeNumber = self.domain.node[departureNode]['LeavingEdge'][arrayTraversal]
+					self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Usable'] = True
+
+					print(self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber])
+		else:
+			if level == 'R':
+				for departureNode in self.domain.nodes():
+					numberOfNeighbours = len(self.domain.node[departureNode]['Neighbours'])
+				
+					for arrayTraversal in range(0,numberOfNeighbours-1):
+						arrivalNode = self.domain.node[departureNode]['Neighbours'][arrayTraversal]
+						edgeNumber = self.domain.node[departureNode]['LeavingEdge'][arrayTraversal]
+						edgeType = self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Type']
+
+						if edgeType == 'N': 
+							self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Usable'] = False
+						else:
+							self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Usable'] = True
+						print(self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber])
+			else:
+				if level == 'B':
+					for departureNode in self.domain.nodes():
+						numberOfNeighbours = len(self.domain.node[departureNode]['Neighbours'])
+				
+						for arrayTraversal in range(0,numberOfNeighbours-1):
+							arrivalNode = self.domain.node[departureNode]['Neighbours'][arrayTraversal]
+							edgeNumber = self.domain.node[departureNode]['LeavingEdge'][arrayTraversal]
+							edgeType = self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Type']
+
+						if edgeType == 'N': 
+							self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Usable'] = False
+						else:
+							if edgeType == 'R':
+								self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Usable'] = False
+							else:
+								self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Usable'] = True
+						print(self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber])
+				else:
+					for departureNode in self.domain.nodes():
+						numberOfNeighbours = len(self.domain.node[departureNode]['Neighbours'])
+				
+						for arrayTraversal in range(0,numberOfNeighbours-1):
+							arrivalNode = self.domain.node[departureNode]['Neighbours'][arrayTraversal]
+							edgeNumber = self.domain.node[departureNode]['LeavingEdge'][arrayTraversal]
+							edgeType = self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Type']
+
+						if edgeType == 'N' or edgeType == 'R' or edgeType == 'B': 
+							self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Usable'] = False
+						else:
+							self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Usable'] = True
+
+		return self.domain
+
+
+	def dijkstra(self, departureNode, arrivalNode, level):
+		domainCopy = self.setUsableEdge(level)
+
+		def minimum(stack, domainCopy):
+			minimalValue = 500
+			nodereturn = 0
+			for nodeBCL in domainCopy.nodes():
+				if nodeBCL in stack:
+					if domainCopy.node[nodeBCL]['DistParcouru'] != -1 and minimalValue > domainCopy.node[nodeBCL]['DistParcouru']:
+						nodereturn = nodeBCL
+						print(nodereturn)
+			return nodereturn
+
+
+		for nodeBCL in domainCopy.nodes():
+			domainCopy.node[nodeBCL]['DistParcouru'] = -1
+			domainCopy.node[nodeBCL]['PreviousNode'] = 0
+
+		domainCopy.node[departureNode]['DistParcouru'] = 0
+
+		notSeen = []
+		notSeen = domainCopy.nodes()
+
+		while notSeen != []:
+			print(notSeen)
+			tempNode1 = minimum(notSeen, domainCopy)
+			notSeen.remove(tempNode1)
 		
-		return domainCopyReturn
 
+			arrayTraversal = len(domainCopy.node[tempNode1]['Neighbours'])
 
-	def dijkstra(self, depatureNode, arrivalNode, level):
-		domainCopy = self.modifyGraph(level)
+			for arrayCase in range (0,arrayTraversal-1):
+				tempNode2 = domainCopy.node[tempNode1]['Neighbours'][arrayCase]
+				tempEdgeNumber = domainCopy.node[tempNode1]['LeavingEdge'][arrayCase]
+				edgeUsability = domainCopy.edge[tempNode1][tempNode2]['edgeNumber' == tempEdgeNumber]['Usable']
 
+				if edgeUsability == True:
+					if domainCopy.node[tempNode2]['DistParcouru'] == -1:
+						domainCopy.node[tempNode2]['DistParcouru'] = domainCopy.node[tempNode1]['DistParcouru']+domainCopy.edge[tempNode1][tempNode2]['edgeNumber' == tempEdgeNumber]['Time']+1
+					else:
+						if domainCopy.node[tempNode2]['DistParcouru'] > domainCopy.node[tempNode1]['DistParcouru'] + domainCopy.edge[tempNode1][tempNode2]['edgeNumber' == tempEdgeNumber]['Time']:
+							domainCopy.node[tempNode2]['DistParcouru'] = domainCopy.node[tempNode1]['DistParcouru']+domainCopy.edge[tempNode1][tempNode2]['edgeNumber' == tempEdgeNumber]['Time']
+					domainCopy.node[tempNode2]['PreviousNode'] = tempNode1
 
-		pass
+		path = []
+		tempNode = arrivalNode
+		while tempNode != departure:
+			path.append(tempNode)
+			tempNode = domainCopy.node[tempNode]['PreviousNode']
 
-	def DFS(self,depatureNode,level):
+		path.append(departureNode)
+		path.reverse()
+
+		print path
+	def DFS(self,departureNode,level):
 		for node in self.domain.nodes():
-			self.domain.node[node]['Discovered'] = "False"
+			self.domain.node[node]['Discovered'] = False
 
 
-		domainCopy = self.modifyGraph(level)
+		domainCopy = self.setUsableEdge(level)
 		tempStack = []
 		accesibleNode = []
-		tempStack.push(depatureNode)
-		tempNode = depatureNode
-
+		tempStack.append(departureNode)
+		tempNode = departureNode
 
 		while tempStack != []:
-			tempStack.pop()
-			if domainCopy.node[tempNode]['Discovered'] != "True":
-				self.domain.node[tempNode]['Discovered'] != "True"
-				accesibleNode.push(tempNode)
-				for tempNeighbours in domainCopy.node[tempNode]['Neighbours']:
-					tempStack.push(tempNeighbours)
+
+			tempNode = tempStack.pop()
+		
+			if domainCopy.node[tempNode]['Discovered'] == False:
+				
+				domainCopy.node[tempNode]['Discovered'] = True
+				accesibleNode.append(tempNode)
+
+				while domainCopy.node[tempNode]['Neighbours'] != []:
+
+					tempArrivalNode = domainCopy.node[tempNode]['Neighbours'].pop(0)
+					tempEdgeNumber = domainCopy.node[tempNode]['LeavingEdge'].pop(0)
+
+					if domainCopy.edge[tempNode][tempArrivalNode]['edgeNumber' == tempEdgeNumber]['Usable'] == True:
+						tempStack.append(tempArrivalNode)
+					
+					
+					
 
 
 		print (accesibleNode)

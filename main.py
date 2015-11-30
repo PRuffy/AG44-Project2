@@ -24,5 +24,6 @@ if __name__ == "__main__":
 	
 	Graph = skiDomain()
 	Graph.createGraph(domainData)
-	Graph.DFS(1,'B')
+	Graph.dijkstra(3,1,'N')
+	#Graph.DFS(6,'V')
 	
