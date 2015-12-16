@@ -51,6 +51,8 @@ class skiDomain(object):
 			#Creating two empty list of neighbours and leaving edge
 			self.domain.node[tempParcoursData]['Neighbours'] = []
 			self.domain.node[tempParcoursData]['LeavingEdge'] = []
+			self.domain.node[tempParcoursData]['PreviousNode'] = 0
+			self.domain.node[tempParcoursData]['DistParcouru'] = 0
 			tempParcoursData += 1
 
 		tempParcoursData+=1
@@ -135,7 +137,7 @@ class skiDomain(object):
 						else:
 							self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Usable'] = True
 						
-		if level =='V':
+		if level == 'V':
 			for departureNode in self.domain.nodes():
 				numberOfNeighbours = len(self.domain.node[departureNode]['Neighbours'])
 
@@ -144,10 +146,16 @@ class skiDomain(object):
 					edgeNumber = self.domain.node[departureNode]['LeavingEdge'][arrayTraversal]
 					edgeType = self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Type']
 
-					if edgeType == 'N' or edgeType == 'R' or edgeType == 'B':
+					if edgeType == 'N' :
 						self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Usable'] = False
 					else:
-						self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Usable'] = True
+						if edgeType == 'R':
+							self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Usable'] = False
+						else:
+							if edgeType == 'B':
+								self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Usable'] = False
+							else:
+								self.domain.edge[departureNode][arrivalNode]['edgeNumber' == edgeNumber]['Usable'] = True
 
 		return self.domain
 
@@ -206,19 +214,25 @@ class skiDomain(object):
 							domainCopy.node[tempNode2]['DistParcouru'] = domainCopy.node[tempNode1]['DistParcouru']+domainCopy.edge[tempNode1][tempNode2]['edgeNumber' == tempEdgeNumber]['Time']
 							domainCopy.node[tempNode2]['PreviousNode'] = tempNode1
 				
-			"""Starting from the arrivalNode we get the path by reading all the previous node until we find the departureNode"""		
+		"""Starting from the arrivalNode we get the path by reading all the previous node until we find the departureNode"""		
 		path = []
 		tempNode = arrivalNode
+
 		while tempNode != departureNode:
+			print domainCopy.node[tempNode]
 			path.append(tempNode)
-			tempNode = domainCopy.node[tempNode]['PreviousNode']
+			if domainCopy.node[tempNode]['PreviousNode']:
+				tempNode = domainCopy.node[tempNode]['PreviousNode']
+			else:
+				break
 
 		path.append(departureNode)
 		path.reverse()
 
 		print("Shortest path : "),
 		print path
-		
+		print("Time needed in seconds :"),
+		print domainCopy.node[arrivalNode]['DistParcouru']	
 
 
 			
